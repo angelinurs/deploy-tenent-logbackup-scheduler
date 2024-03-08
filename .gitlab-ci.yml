@@ -6,11 +6,12 @@
 # Note that environment variables can be set in several places
 # See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
 variables:
-  CONTAINER_REGISTRY: test-repo
+  CONTAINER_REGISTRY: ""
   JDK_IMAGE: eclipse-temurin:17-jdk-alpine
 
 stages:
 - build
+- dast
 
 before_script:
   - echo "start java archive~!!"
@@ -30,8 +31,11 @@ dockerfile:
   before_script:
     - echo "build Dockerfile"
     - export DOCKERFILE_NAME=`echo "$CI_PROJECT_NAME" | cut -d '-' -f 2`
-    - echo "$DOCKERFILE_NAME"
-    - echo "$DOCKER_PASSWORD" | docker login --username $DOCKER_USER --password-stdin
+    - echo $DOCKERFILE_NAME | sed 's/[A-Z]/L&/g' >> DOCKERFILE_NAME
+    - echo $DOCKERFILE_NAME
+    # in private docker hub registry, CONTAINER_REGISTRY is user id
+    - export CONTAINER_REGISTRY=`echo $DOCKER_USER`
+    - echo $DOCKER_PASSWORD | docker login --username $DOCKER_USER --password-stdin
   script: 
     - docker build -t $DOCKERFILE_NAME:$VERSION ./dockerfile
     - docker image tag $DOCKERFILE_NAME:$VERSION $CONTAINER_REGISTRY/$DOCKERFILE_NAME:$VERSION
