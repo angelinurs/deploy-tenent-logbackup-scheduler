@@ -1,5 +1,0 @@
-
-eclipse-temurin:17.0.9_9-jre-alpine (alpine 3.18.5)
-===================================================
-Total: 0 (CRITICAL: 0)
-
