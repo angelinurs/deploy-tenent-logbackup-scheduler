@@ -10,7 +10,6 @@ variables:
 
 stages:
 - build
-- dast
 
 before_script:
   - echo "start java archive~!!"
@@ -42,5 +41,4 @@ dockerfile:
     - docker push $CONTAINER_REGISTRY/$DOCKERFILE_NAME:$VERSION
     # clear &&
     - docker images | grep $DOCKERFILE_NAME
-  after_script:
     - docker system prune -f -a
