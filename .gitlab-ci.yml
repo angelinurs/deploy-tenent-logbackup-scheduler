@@ -35,6 +35,6 @@ dockerfile:
   script: 
     - docker build -t $DOCKERFILE_NAME:$VERSION ./dockerfile
     - docker image tag $DOCKERFILE_NAME:$VERSION $CONTAINER_REGISTRY/$DOCKERFILE_NAME:$VERSION
-    - docker push $CONTAINER_REGISTRY/$NAME:$VERSION
+    - docker push $CONTAINER_REGISTRY/$DOCKERFILE_NAME:$VERSION
     # clear &&
     - docker images | grep $DOCKERFILE_NAME
