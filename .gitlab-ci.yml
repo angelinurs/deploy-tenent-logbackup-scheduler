@@ -34,7 +34,7 @@ dockerfile:
     - echo "$DOCKER_PASSWORD" | docker login --username $DOCKER_USER --password-stdin
   script: 
     - docker build -t $DOCKERFILE_NAME:$VERSION ./dockerfile
-    - docker image tag $DOCKERFILE_NAME:$VERSION $CONTAINER_REGISTRY/$NAME:$VERSION
+    - docker image tag $DOCKERFILE_NAME:$VERSION $CONTAINER_REGISTRY/$DOCKERFILE_NAME:$VERSION
     - docker push $CONTAINER_REGISTRY/$NAME:$VERSION
     # clear &&
     - docker images | grep $DOCKERFILE_NAME
