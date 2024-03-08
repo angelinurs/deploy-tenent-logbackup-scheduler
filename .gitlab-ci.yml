@@ -30,7 +30,7 @@ dockerfile:
   before_script:
     - echo "build Dockerfile"
     - export DOCKERFILE_NAME=`echo "$CI_PROJECT_NAME" | cut -d '-' -f 2`
-    - echo '$DOCKERFILE_NAME'
+    - echo "$DOCKERFILE_NAME"
     - echo "$DOCKER_PASSWORD" | docker login --username $DOCKER_USER --password-stdin
   script: 
     - docker build -t $DOCKERFILE_NAME:$VERSION ./dockerfile
