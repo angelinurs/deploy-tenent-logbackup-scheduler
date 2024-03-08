@@ -7,7 +7,6 @@
 # See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
 variables:
   CONTAINER_REGISTRY: ""
-  JDK_IMAGE: eclipse-temurin:17-jdk-alpine
 
 stages:
 - build
@@ -31,6 +30,7 @@ dockerfile:
   before_script:
     - echo "build Dockerfile"
     - export DOCKERFILE_NAME=`echo "$CI_PROJECT_NAME" | cut -d '-' -f 2`
+    # in private docker hub registry, repository name must be lower case.
     - echo $DOCKERFILE_NAME | sed 's/[A-Z]/L&/g' >> DOCKERFILE_NAME
     - echo $DOCKERFILE_NAME
     # in private docker hub registry, CONTAINER_REGISTRY is user id
@@ -42,3 +42,5 @@ dockerfile:
     - docker push $CONTAINER_REGISTRY/$DOCKERFILE_NAME:$VERSION
     # clear &&
     - docker images | grep $DOCKERFILE_NAME
+  after_script:
+    - docker system prune -f -a
