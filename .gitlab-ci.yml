@@ -29,7 +29,7 @@ dockerfile:
   stage: build
   before_script:
     - echo "build Dockerfile"
-    - export DOCKERFILE_NAME=`echo '$CI_PROJECT_NAME' | cut -d '-' -f 2`
+    - export DOCKERFILE_NAME=`echo "$CI_PROJECT_NAME" | cut -d '-' -f 2`
     - echo '$DOCKERFILE_NAME'
     - echo "$DOCKER_PASSWORD" | docker login --username $DOCKER_USER --password-stdin
   script: 
@@ -37,4 +37,4 @@ dockerfile:
     - docker image tag $DOCKERFILE_NAME:$VERSION $CONTAINER_REGISTRY/$NAME:$VERSION
     - docker push $CONTAINER_REGISTRY/$NAME:$VERSION
     # clear &&
-    - docker images | grep $DOCKERFILE_NAMEERFILE_NAME
+    - docker images | grep $DOCKERFILE_NAME
