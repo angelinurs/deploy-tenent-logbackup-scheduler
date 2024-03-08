@@ -21,7 +21,7 @@ dockerfile:
     DOCKER_HOST: tcp://docker:2375/
     DOCKER_TLS_CERTDIR: ""
     DOCKER_USER: angelinurs
-    DOCKER_PASSWORD: '@@rhdrhd12546'
+    DOCKER_PASSWORD: "@@rhdrhd12546"
     VERSION: 0.9
   image: docker:git
   services:
