@@ -22,7 +22,7 @@ dockerfile:
     DOCKER_TLS_CERTDIR: ""
     DOCKER_USER: angelinurs
     DOCKER_PASSWORD: "@@rhdrhd12546"
-    VERSION: 0.9
+    VERSION: "0.9"
   image: docker:git
   services:
     - docker:dind
@@ -37,4 +37,4 @@ dockerfile:
     - docker image tag $DOCKERFILE_NAME:$VERSION $CONTAINER_REGISTRY/$NAME:$VERSION
     - docker push $CONTAINER_REGISTRY/$NAME:$VERSION
     # clear &&
-    - docker images | grep $DOCKERFILE_NAME
+    - docker images | grep $DOCKERFILE_NAMEERFILE_NAME
