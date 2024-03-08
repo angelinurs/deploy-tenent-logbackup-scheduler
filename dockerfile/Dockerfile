@@ -1,0 +1,111 @@
+# ------------------------------------------------------------------------------
+#               NOTE: THIS DOCKERFILE IS GENERATED VIA "generate_dockerfiles.py"
+#
+#                       PLEASE DO NOT EDIT IT DIRECTLY.
+# ------------------------------------------------------------------------------
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+FROM eclipse-temurin:17-jre-alpine
+
+ENV WORK_HOME /app
+ENV APP_NAME TenentBackupScheduler
+ENV PATH ${WORK_HOME}/${APP_NAME}:$PATH
+ENV LOG_HOME ${WORK_HOME}/logs/schema
+
+ENV USER ez
+ENV GROUP ez
+
+RUN mkdir -p \
+            ${WORK_HOME}/${APP_NAME} \
+            ${WORK_HOME}/util \
+            ${LOG_HOME} \
+            ;
+# Create user and set ownership and permissions as required
+# RUN adduser -D ez && chown -R ez /app
+RUN adduser ez --shell /bin/false --no-create-home; \
+    usermod --shell /sbin/nologin ez; \
+    chown -R ez:ez /app; \
+    chown ${USER}:${GROUP} ${LOG_HOME};
+
+## ... copy application files
+
+# COPY ssh_files.tar.gz /root
+# RUN mkdir -p /root/.ssh
+# RUN chmod 700 /root/.ssh
+# RUN tar -xvzf /root/ssh_files.tar.gz -C /root/.ssh
+# RUN chmod 440 /root/.ssh/config
+
+WORKDIR ${WORK_HOME}
+
+# Time zone Setting
+ENV TZ=Asia/Seoul
+
+# #
+RUN set -eux; \
+    apk --no-cache update; \
+	apk --no-cache upgrade; \
+    # wget -O /etc/apk/keys/adoptium.rsa.pub https://packages.adoptium.net/artifactory/api/security/keypair/public/repositories/apk && \
+    # echo 'https://packages.adoptium.net/artifactory/apk/alpine/main' >> /etc/apk/repositories && \
+    # apk --no-cache add temurin-17-jdk; \
+	# apk --no-cache add \ 
+    #                 openjdk17-jre>17.0.9_p8-r0; \      
+	apk --no-cache add tzdata && \
+	cp /usr/share/zoneinfo/Asia/Seoul /etc/localtime && \
+	echo "Asia/Seoul" > /etc/timezone \
+	apk del tzdata ; 
+
+RUN set -eux; \
+	apk --no-cache add \ 
+                    openssl>3.1.4-r1; \
+	apk cache clean; \
+	rm -rf /var/cache/apk/*;
+
+# EXPOSE 8080
+
+COPY --chown=${USER}:${GROUP} ./${APP_NAME}/. ${WORK_HOME}/${APP_NAME} 
+COPY --chown=${USER}:${GROUP} ./util/. ${WORK_HOME}/util
+
+RUN chmod +x ${WORK_HOME}/${APP_NAME}/startup.sh;
+
+# cce patch
+# RUN set -eux; \
+# /etc/*
+    # sed -i 's/pam_deny.so/pam_pwquality.so enforce_for_root retry=3 minlen=8 dcredit=-1 ucredit=-1 lcredit=-1 ocredit=-1/' /etc/pam.d/common-password; \
+    # sed -i 's/pam_deny.so/pam_tally2.so deny=5 no_magic_root/' /etc/pam.d/common-auth; \
+    # sed -i 's/PASS_MAX_DAYS\t99999/PASS_MAX_DAYS\t90/' /etc/login.defs; \
+    # chmod 400 /etc/shadow; \
+    # chmod -s `find / -user root -type f \( -perm -4000 -o -perm -2000 \)`;
+    # chmod o-w `find / -type f -perm -2`; \
+    # find / -type f -perm -2 -exec chmod o-w {} \;
+
+# RUN chmod o-w /dev/termination-log;
+
+RUN chmod 555 `find /${WORK_HOME}/${APP_NAME} -name "*" -and -not -name "*log"` ;
+
+#  #
+USER ${USER}
+
+# RUN chmod -R 755 ${WORK_HOME};
+
+RUN chmod 755 \
+        ${WORK_HOME} \
+        ${WORK_HOME}/${APP_NAME} \
+        ${LOG_HOME} \
+        ;
+
+WORKDIR ${WORK_HOME}/${APP_NAME}
+
+#EXPOSE 46004
+
+CMD ["/bin/sh", "-c", "/app/$APP_NAME/startup.sh"]

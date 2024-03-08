@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: psm-tenent-backup-dep-1
+  # namespace: default
+  namespace: psm-svc207-ns
+  labels:
+    app: psm-tenent-backup
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: psm-tenent-backup
+  template:
+    metadata:
+      labels:
+        app: psm-tenent-backup
+    spec:
+      containers:
+      - name: psm-tenent-backup-con-1
+        image: no6d6r14.private-ncr.gov-ntruss.com/tenent-backup-scheduler:0.3
+        imagePullPolicy: Always
+        # resources:
+        #   limits:
+        #     cpu: 500m
+        #   requests:
+        #     cpu: 200m
+        ports:
+        - name: tenent-backup-p
+          containerPort: 8080
+        env:
+        - name: APP_PROP
+          value: psm-tenent-backup
+        - name: COMPANY
+          value: <company_name>
+        volumeMounts:
+          - mountPath: /etc/localtime
+            name: tz-seoul  
+          - mountPath: /app/logs
+            name: psm-volume
+      volumes:
+      - name: tz-seoul
+        hostPath:
+          path: /usr/share/zoneinfo/Asia/Seoul
+      - name: psm-volume
+        persistentVolumeClaim:
+          claimName: static-pvc
+      imagePullSecrets:
+      - name: regcred
+---
+apiVersion: v1
+kind: Service
+metadata:
+  # finalizers:
+  # - service.kubernetes.io/load-balancer-cleanup
+  finalizers:
+  - service.kubernetes.io/load-balancer-cleanup
+  labels:
+    app: psm-tenent-backup-svc-1
+  name: psm-tenent-backup-svc-1
+  # namespace: default
+  namespace: psm-svc207-ns
+spec:
+  # allocateLoadBalancerNodePorts: true
+  # externalTrafficPolicy: Cluster
+  # internalTrafficPolicy: Cluster
+  # ipFamilies:
+  # - IPv4
+  # ipFamilyPolicy: SingleStack
+  allocateLoadBalancerNodePorts: true
+  externalTrafficPolicy: Cluster
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - name: tenent-backup-p
+    port: 8080
+    protocol: TCP
+    targetPort: tenent-backup-p
+  selector:
+    app: psm-tenent-backup
+  sessionAffinity: None
+  type: LoadBalancer
+  # type: LoadBalancer

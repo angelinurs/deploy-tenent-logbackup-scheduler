@@ -1,0 +1,105 @@
+#
+# NOTE: THIS DOCKERFILE IS GENERATED VIA "apply-templates.sh"
+#
+# PLEASE DO NOT EDIT IT DIRECTLY.
+#
+
+FROM eclipse-temurin:17-jre-jammy
+
+ENV WORK_HOME /app
+ENV APP_NAME TenentBackupScheduler
+ENV PATH ${WORK_HOME}/${APP_NAME}:$PATH
+ENV LOG_HOME ${WORK_HOME}/logs/shcema
+
+ENV USER ez
+ENV GROUP ez
+
+RUN mkdir -p ${WORK_HOME}/${APP_NAME} \
+             ${WORK_HOME}/util \
+             ${LOG_HOME} \
+             ;
+
+## adduser non priviliged user
+
+# Create user and set ownership and permissions as required
+# RUN adduser -D ez && chown -R ez /app
+RUN adduser ez --shell /bin/false --no-create-home; \
+    usermod --shell /sbin/nologin ez; \
+    chown -R ez:ez /app; \
+    chown ${USER}:${GROUP} ${LOG_HOME};
+
+## ... copy application files
+
+# COPY ssh_files.tar.gz /root
+# RUN mkdir -p /root/.ssh
+# RUN chmod 700 /root/.ssh
+# RUN tar -xvzf /root/ssh_files.tar.gz -C /root/.ssh
+# RUN chmod 440 /root/.ssh/config
+
+WORKDIR ${WORK_HOME}
+
+# Set Domestics sources.list : kakao branch
+COPY sources.list /etc/apt/
+
+# Time zone Setting
+ARG DEBIAN_FRONTEND=noninteractive
+ENV TZ=Asia/Seoul
+
+# #
+RUN set -eux; \
+    apt-get update; \
+    apt-get upgrade -yq; \
+    apt-get dist-upgrade -yq; \
+    apt-get install -yq tzdata \
+                        postgresql-client-14; \
+    # apt-get install -yq openssl; \
+    ln -fs /usr/share/zoneinfo/Asia/Seoul /etc/localtime; \
+	dpkg-reconfigure -f noninteractive tzdata; \
+	# apt-get install -y vim; \
+	# apt-get install -y net-tools; \
+	# apt-get install -y nfs-common cifs-utils; \
+    ## ubuntu Security update
+    # apt-get install unattended-upgrades; \
+    apt-get purge wget -yq; \
+    apt-get autoremove -yq; \
+    ## automatic update
+    # dpkg-reconfigure unattended-upgrades; \
+	rm -rf /var/lib/apt/lists/*
+
+# EXPOSE 8080
+
+COPY --chown=${USER}:${GROUP} ./${APP_NAME}/. ${WORK_HOME}/${APP_NAME} 
+COPY --chown=${USER}:${GROUP} ./util/. ${WORK_HOME}/util
+
+RUN chmod +x ${WORK_HOME}/${APP_NAME}/startup.sh;
+
+# cce patch
+RUN set -eux; \
+# /etc/*
+    sed -i 's/pam_deny.so/pam_pwquality.so enforce_for_root retry=3 minlen=8 dcredit=-1 ucredit=-1 lcredit=-1 ocredit=-1/' /etc/pam.d/common-password; \
+    sed -i 's/pam_deny.so/pam_tally2.so deny=5 no_magic_root/' /etc/pam.d/common-auth; \
+    sed -i 's/PASS_MAX_DAYS\t99999/PASS_MAX_DAYS\t90/' /etc/login.defs; \
+    chmod 400 /etc/shadow; \
+    rm -f /etc/apt/sources.list; \
+    chmod -s `find / -user root -type f \( -perm -4000 -o -perm -2000 \)`;
+    # chmod o-w `find / -type f -perm -2`; \
+    # find / -type f -perm -2 -exec chmod o-w {} \;
+
+# RUN chmod o-w /dev/termination-log;
+
+RUN chmod 555 `find /${WORK_HOME}/${APP_NAME} -name "*" -and -not -name "*log"` ;
+
+#  #
+USER ez
+
+RUN chmod 755 ${WORK_HOME}/${APP_NAME} \
+              ${WORK_HOME}/util \
+              ${WORK_HOME}/logs \
+              ${LOG_HOME};
+
+
+WORKDIR ${WORK_HOME}/${APP_NAME}
+
+#EXPOSE 46004
+
+CMD ["/bin/sh", "-c", "/app/$APP_NAME/startup.sh"]
