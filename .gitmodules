@@ -1,0 +1,3 @@
+[submodule "deploy-tenentlogbackupscheduler"]
+	path = deploy-tenentlogbackupscheduler
+	url = http://192.168.161.250:11180/angel/deploy-tenentlogbackupscheduler
