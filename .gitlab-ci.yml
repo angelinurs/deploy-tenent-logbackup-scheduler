@@ -28,7 +28,7 @@ dockerfile:
     - docker:dind
   stage: build
   before_script:
-    - ls -al ./java-source
+    - ls -al ./src
     - echo "build Dockerfile"
     - export DOCKERFILE_NAME=`echo "$CI_PROJECT_NAME" | cut -d '-' -f 2`
     - echo $DOCKERFILE_NAME
