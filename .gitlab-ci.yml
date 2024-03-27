@@ -27,6 +27,7 @@ dockerfile:
     - docker:dind
   stage: build
   before_script:
+    - ls -al
     - echo "build Dockerfile"
     - export DOCKERFILE_NAME=`echo "$CI_PROJECT_NAME" | cut -d '-' -f 2`
     # in private docker hub registry, repository name must be lower case.
