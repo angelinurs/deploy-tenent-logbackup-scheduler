@@ -33,6 +33,7 @@ dockerfile:
     - ls -al ./java-source
     - echo "build Dockerfile"
     - export DOCKERFILE_NAME=`echo "$CI_PROJECT_NAME" | cut -d '-' -f 2`
+    - echo $DOCKERFILE_NAME
     # in private docker hub registry, repository name must be lower case.
     - echo $DOCKERFILE_NAME | sed 's/[A-Z]/L&/g' >> DOCKERFILE_NAME
     - echo $DOCKERFILE_NAME
