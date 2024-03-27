@@ -7,6 +7,8 @@
 # See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
 variables:
   CONTAINER_REGISTRY: ""
+  GIT_SUBMODULE_STRATEGY: recursive
+  # GIT_SUBMODULE_STRATEGY: normal
 
 stages:
 - build
@@ -27,8 +29,6 @@ dockerfile:
     - docker:dind
   stage: build
   before_script:
-    - pwd
-    - ls -al
     - ls -al ./java-source
     - echo "build Dockerfile"
     - export DOCKERFILE_NAME=`echo "$CI_PROJECT_NAME" | cut -d '-' -f 2`
