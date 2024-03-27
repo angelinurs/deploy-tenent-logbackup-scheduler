@@ -7,8 +7,9 @@
 # See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
 variables:
   CONTAINER_REGISTRY: ""
-  # GIT_SUBMODULE_STRATEGY: recursive
-  GIT_SUBMODULE_STRATEGY: normal
+  # GIT_SUBMODULE_STRATEGY: normal
+  GIT_SUBMODULE_STRATEGY: recursive
+  GIT_SUBMODULE_FORCE_HTTPS: "true"
 
 stages:
 - build
