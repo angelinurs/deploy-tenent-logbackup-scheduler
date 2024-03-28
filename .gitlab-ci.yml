@@ -29,6 +29,11 @@ dockerfile:
   stage: build
   before_script:
     - ls -al ./src
+    - cd ./src
+    - chmod +x ./gradlew
+    - ./gradlew clean
+    - ./gradlew bootjar
+    - ls -al ./build/libs/
     - echo "build Dockerfile"
     # extract dockerfile name
     - export DOCKERFILE_NAME=`echo "$CI_PROJECT_NAME" | cut -d '-' -f 2`
