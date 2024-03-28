@@ -29,7 +29,7 @@ gradle_bootjar:
     - chmod +x ./gradlew
     - ./gradlew clean
     - ./gradlew bootjar
-    - echo JAR_FILE="`ls build/libs/ |  grep jar`" >> CI_JOB_ID.env
+    - echo JAR_FILE="`ls src/build/libs/ |  grep jar`" >> CI_JOB_ID.env
   artifacts:
     paths:
       - src/build/libs/*.jar
