@@ -32,7 +32,7 @@ gradle_bootjar:
     - echo JAR_FILE="`ls build/libs/ |  grep jar`" >> CI_JOB_ID.env
   artifacts:
     paths:
-      - build/libs/*.jar
+      - src/build/libs/*.jar
     when: on_success
     expire_in: 10 min
     reports:
@@ -54,7 +54,7 @@ dockerfile:
   before_script:
     - ls -al ./src
     - echo $PWD
-    - ls -al $PWD
+    - ls -al $PWD/src/build/libs
     - echo "build Dockerfile"
     # extract dockerfile name
     - export DOCKERFILE_NAME=`echo "$CI_PROJECT_NAME" | cut -d '-' -f 2`
