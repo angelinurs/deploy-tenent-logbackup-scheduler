@@ -11,9 +11,33 @@ variables:
   GIT_SUBMODULE_STRATEGY: recursive
   # GIT_SUBMODULE_FORCE_HTTPS: "true"
   # GIT_SUBMODULE_PATHS: src
+  JDK_IMAGE: eclipse-temurin:17-jdk-alpine
+  BUILD_JOB_ID: ""
 
 stages:
+- bootjar
 - build
+
+gradle_bootjar:
+  image: $JDK_IMAGE
+  stage: bootjar
+  before_script:
+    - cd ./src
+  script:
+    # get the job id and save it as environment statement
+    - echo BUILD_JOB_ID=$CI_JOB_ID >> CI_JOB_ID.env
+    - chmod +x ./gradlew
+    - ./gradlew clean
+    - ./gradlew bootjar
+    - echo JAR_FILE="`ls build/libs/ |  grep jar`" >> CI_JOB_ID.env
+  artifacts:
+    paths:
+      - build/libs/*.jar
+    when: on_success
+    expire_in: 10 min
+    reports:
+      # export the environment statement so we can access it in the release stage
+      dotenv: CI_JOB_ID.env
 
 dockerfile:
   variables:
@@ -29,11 +53,8 @@ dockerfile:
   stage: build
   before_script:
     - ls -al ./src
-    - cd ./src
-    - chmod +x ./gradlew
-    - ./gradlew clean
-    - ./gradlew bootjar
-    - ls -al ./build/libs/
+    - echo $PWD
+    - ls -al $PWD
     - echo "build Dockerfile"
     # extract dockerfile name
     - export DOCKERFILE_NAME=`echo "$CI_PROJECT_NAME" | cut -d '-' -f 2`
