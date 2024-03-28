@@ -13,6 +13,7 @@ variables:
   # GIT_SUBMODULE_PATHS: src
   JDK_IMAGE: eclipse-temurin:17-jdk-alpine
   BUILD_JOB_ID: ""
+  APP_NAME: TenentBackupScheduler
 
 stages:
 - bootjar
@@ -55,6 +56,8 @@ dockerfile:
     - ls -al ./src
     - echo $PWD
     - ls -al $PWD/src/build/libs
+    - cp $PWD/src/build/libs/*.jar $PWD/dockerfile/$APP_NAME/
+    - ls -al $PWD/dockerfile/$APP_NAME/
     - echo "build Dockerfile"
     # extract dockerfile name
     - export DOCKERFILE_NAME=`echo "$CI_PROJECT_NAME" | cut -d '-' -f 2`
