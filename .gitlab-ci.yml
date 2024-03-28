@@ -10,7 +10,7 @@ variables:
   # GIT_SUBMODULE_STRATEGY: normal
   GIT_SUBMODULE_STRATEGY: recursive
   # GIT_SUBMODULE_FORCE_HTTPS: "true"
-  #  GIT_SUBMODULE_PATHS: src
+  # GIT_SUBMODULE_PATHS: src
 
 stages:
 - build
@@ -30,8 +30,8 @@ dockerfile:
   before_script:
     - ls -al ./src
     - echo "build Dockerfile"
+    # extract dockerfile name
     - export DOCKERFILE_NAME=`echo "$CI_PROJECT_NAME" | cut -d '-' -f 2`
-    - echo $DOCKERFILE_NAME
     # in private docker hub registry, repository name must be lower case.
     - echo $DOCKERFILE_NAME | sed 's/[A-Z]/L&/g' >> DOCKERFILE_NAME
     - echo $DOCKERFILE_NAME
@@ -45,3 +45,8 @@ dockerfile:
     # clear &&
     - docker images | grep $DOCKERFILE_NAME
     - docker system prune -f -a
+  # Run this job in a branch where a Dockerfile exists
+  rules:
+    - if: $CI_COMMIT_BRANCH
+      exists:
+        - Dockerfile
