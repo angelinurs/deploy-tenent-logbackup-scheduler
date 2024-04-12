@@ -6,76 +6,76 @@
 # Note that environment variables can be set in several places
 # See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
 variables:
-  CONTAINER_REGISTRY: ""
-  # GIT_SUBMODULE_STRATEGY: normal
+  CONTAINER_REGISTRY: ''
   GIT_SUBMODULE_STRATEGY: recursive
-  # GIT_SUBMODULE_FORCE_HTTPS: "true"
-  # GIT_SUBMODULE_PATHS: src
   JDK_IMAGE: eclipse-temurin:17-jdk-alpine
-  BUILD_JOB_ID: ""
+  BUILD_JOB_ID: ''
   APP_NAME: TenentBackupScheduler
-
 stages:
 - bootjar
 - build
-
+- test
+- deploy
+- review
+- dast
+- staging
+- canary
+- production
+- incremental rollout 10%
+- incremental rollout 25%
+- incremental rollout 50%
+- incremental rollout 100%
+- performance
+- cleanup
 gradle_bootjar:
-  image: $JDK_IMAGE
+  image: "$JDK_IMAGE"
   stage: bootjar
   before_script:
-    - cd ./src
+  - cd ./src
   script:
-    # get the job id and save it as environment statement
-    - echo BUILD_JOB_ID=$CI_JOB_ID >> CI_JOB_ID.env
-    - chmod +x ./gradlew
-    - ./gradlew clean
-    - ./gradlew bootjar
-    - echo JAR_FILE="`ls src/build/libs/ |  grep jar`" >> CI_JOB_ID.env
+  - echo BUILD_JOB_ID=$CI_JOB_ID >> CI_JOB_ID.env
+  - chmod +x ./gradlew
+  - "./gradlew clean"
+  - "./gradlew bootjar"
+  - echo JAR_FILE="`ls src/build/libs/ |  grep jar`" >> CI_JOB_ID.env
   artifacts:
     paths:
-      - src/build/libs/*.jar
+    - src/build/libs/*.jar
     when: on_success
     expire_in: 10 min
     reports:
-      # export the environment statement so we can access it in the release stage
       dotenv: CI_JOB_ID.env
-
 dockerfile:
   variables:
     DOCKER_DRIVER: overlay2
     DOCKER_HOST: tcp://docker:2375/
-    DOCKER_TLS_CERTDIR: ""
+    DOCKER_TLS_CERTDIR: ''
     DOCKER_USER: angelinurs
     DOCKER_PASSWORD: "@@rhdrhd12546"
-    VERSION: "0.9"
+    VERSION: '0.9'
   image: docker:git
   services:
-    - docker:dind
+  - docker:dind
   stage: build
   before_script:
-    - ls -al ./src
-    - echo $PWD
-    - ls -al $PWD/src/build/libs
-    - cp $PWD/src/build/libs/*.jar $PWD/dockerfile/$APP_NAME/
-    - ls -al $PWD/dockerfile/$APP_NAME/
-    - echo "build Dockerfile"
-    # extract dockerfile name
-    - export DOCKERFILE_NAME=`echo "$CI_PROJECT_NAME" | cut -d '-' -f 2`
-    # in private docker hub registry, repository name must be lower case.
-    - echo $DOCKERFILE_NAME | sed 's/[A-Z]/L&/g' >> DOCKERFILE_NAME
-    - echo $DOCKERFILE_NAME
-    # in private docker hub registry, CONTAINER_REGISTRY is user id
-    - export CONTAINER_REGISTRY=`echo $DOCKER_USER`
-    - echo $DOCKER_PASSWORD | docker login --username $DOCKER_USER --password-stdin
-  script: 
-    - docker build -t $DOCKERFILE_NAME:$VERSION ./dockerfile
-    - docker image tag $DOCKERFILE_NAME:$VERSION $CONTAINER_REGISTRY/$DOCKERFILE_NAME:$VERSION
-    - docker push $CONTAINER_REGISTRY/$DOCKERFILE_NAME:$VERSION
-    # clear &&
-    - docker images | grep $DOCKERFILE_NAME
-    - docker system prune -f -a
-  # Run this job in a branch where a Dockerfile exists
-  # rules:
-  #   - if: $CI_COMMIT_BRANCH
-  #     exists:
-  #       - Dockerfile
+  - ls -al ./src
+  - echo $PWD
+  - ls -al $PWD/src/build/libs
+  - cp $PWD/src/build/libs/*.jar $PWD/dockerfile/$APP_NAME/
+  - ls -al $PWD/dockerfile/$APP_NAME/
+  - echo "build Dockerfile"
+  - export DOCKERFILE_NAME=`echo "$CI_PROJECT_NAME" | cut -d '-' -f 2`
+  - echo $DOCKERFILE_NAME | sed 's/[A-Z]/L&/g' >> DOCKERFILE_NAME
+  - echo $DOCKERFILE_NAME
+  - export CONTAINER_REGISTRY=`echo $DOCKER_USER`
+  - echo $DOCKER_PASSWORD | docker login --username $DOCKER_USER --password-stdin
+  script:
+  - docker build -t $DOCKERFILE_NAME:$VERSION ./dockerfile
+  - docker image tag $DOCKERFILE_NAME:$VERSION $CONTAINER_REGISTRY/$DOCKERFILE_NAME:$VERSION
+  - docker push $CONTAINER_REGISTRY/$DOCKERFILE_NAME:$VERSION
+  - docker images | grep $DOCKERFILE_NAME
+  - docker system prune -f -a
+sast:
+  stage: test
+include:
+- template: Auto-DevOps.gitlab-ci.yml
