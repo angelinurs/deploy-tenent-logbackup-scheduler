@@ -17,30 +17,31 @@ variables:
 
 stages:
 - bootjar
-- build
+# - build
 
 gradle_bootjar:
   image: $JDK_IMAGE
   stage: bootjar
-  before_script:
+  #before_script:
+  script:
     - cd ./src
     - echo "check submodule"
     - ls -al ./build
-  script:
-    # get the job id and save it as environment statement
-    - echo BUILD_JOB_ID=$CI_JOB_ID >> CI_JOB_ID.env
-    - chmod +x ./gradlew
-    - ./gradlew clean
-    - ./gradlew bootjar
-    - echo JAR_FILE="`ls src/build/libs/ |  grep jar`" >> CI_JOB_ID.env
-  artifacts:
-    paths:
-      - src/build/libs/*.jar
-    when: on_success
-    expire_in: 10 min
-    reports:
-      # export the environment statement so we can access it in the release stage
-      dotenv: CI_JOB_ID.env
+  # script:
+  #   # get the job id and save it as environment statement
+  #   - echo BUILD_JOB_ID=$CI_JOB_ID >> CI_JOB_ID.env
+  #   - chmod +x ./gradlew
+  #   - ./gradlew clean
+  #   - ./gradlew bootjar
+  #   - echo JAR_FILE="`ls src/build/libs/ |  grep jar`" >> CI_JOB_ID.env
+  # artifacts:
+  #   paths:
+  #     - src/build/libs/*.jar
+  #   when: on_success
+  #   expire_in: 10 min
+  #   reports:
+  #     # export the environment statement so we can access it in the release stage
+  #     dotenv: CI_JOB_ID.env
 
 dockerfile:
   variables:
