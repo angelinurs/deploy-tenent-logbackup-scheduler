@@ -24,6 +24,8 @@ gradle_bootjar:
   stage: bootjar
   before_script:
     - cd ./src
+    - echo "check submodule"
+    - ls -al ./build
   script:
     # get the job id and save it as environment statement
     - echo BUILD_JOB_ID=$CI_JOB_ID >> CI_JOB_ID.env
