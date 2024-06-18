@@ -1,3 +1,4 @@
 [submodule "src"]
 	path = src
-	url = http://192.168.0.6:11180/psm-saas/tenent-logbackup-scheduler
+	url = http://192.168.0.6:11180/solution-advancement-project/tenent-logbackup-scheduler
+	
